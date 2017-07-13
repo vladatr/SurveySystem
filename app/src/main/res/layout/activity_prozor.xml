@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/okvir"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.vladimir.anketa1.Prozor"
+    tools:layout_editor_absoluteY="81dp"
+    tools:layout_editor_absoluteX="20dp">
+
+    <TextView
+        android:id="@+id/pitanje"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="0dp"
+        android:background="@color/pitanje"
+        android:text="Učitaj pitanja"
+        android:textSize="30dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/okvirDno"
+
+        android:layout_width="368dp"
+        android:layout_height="44dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginLeft="27dp"
+        android:layout_marginStart="27dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent">
+
+
+        <TextView
+            android:id="@+id/tok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="40dp"
+            app:layout_constraintStart_toEndOf="@+id/Anketa"
+            tools:layout_editor_absoluteX="133dp"
+            tools:layout_editor_absoluteY="0dp" />
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:onClick="sledecePitanje"
+            android:text="Sacuvaj"
+            app:layout_constraintRight_toRightOf="parent"
+            tools:layout_editor_absoluteY="50dp" />
+
+
+    </android.support.constraint.ConstraintLayout>
+
+    <ScrollView
+        android:background="@color/skrol"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="80dp"
+        android:layout_marginRight="25dp"
+        android:layout_marginLeft="80dp"
+        android:layout_marginTop="80dp"
+        app:layout_constraintBottom_toTopOf="@+id/okvirDno"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pitanje"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:ignore="HardcodedText"
+        android:layout_marginStart="80dp"
+        android:layout_marginEnd="25dp">
+
+        <android.support.constraint.ConstraintLayout
+android:background="@color/odgovori"
+            android:id="@+id/okvirSkrola"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@+id/okvirDno"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/pitanje"
+            app:layout_constraintVertical_bias="0.08">
+
+            <!-- ETC constraints -->
+        </android.support.constraint.ConstraintLayout>
+    </ScrollView>
+
+
+</android.support.constraint.ConstraintLayout>
