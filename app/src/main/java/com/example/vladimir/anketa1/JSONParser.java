@@ -37,19 +37,20 @@ class JSONParser {
 
             JSONArray arInfo = object.getJSONArray("info");
             JSONObject obji = arInfo.getJSONObject(0);
-            Prozor.anketa = obji.getInt("broj_ankete");
+            Main.naziv_ankete = obji.getString("naziv_ankete");
+            Main.broj_ankete = obji.getInt("broj_ankete");
             String error = obji.getString("error");
 
-            Log.i("get", Prozor.kod + " " + Prozor.anketa + ". " + error);
+            Log.i("get", Main.kod + " " + Main.broj_ankete + ". " + error);
             if(!TextUtils.isEmpty(error)) {
-                Toast.makeText(Prozor.kontekst, "Greska: " + error, Toast.LENGTH_SHORT).show();
+                Toast.makeText(Main.kontekst, "Greska: " + error, Toast.LENGTH_SHORT).show();
             }
 
             //PITANJA
             JSONArray ar  = object.getJSONArray("pitanja");
              List<Pitanje> listaPitanja = new ArrayList<>();
             Log.i("url", "3");
-            Prozor.brojPitanja = ar.length();
+            Main.brojPitanja = ar.length();
             for(int i=0; i<ar.length(); i++) {
                 JSONObject obj = ar.getJSONObject(i);
                 Pitanje pit = new Pitanje();
@@ -58,7 +59,7 @@ class JSONParser {
                 pit.setTip(obj.getInt("tip"));
                 listaPitanja.add(pit);
             }
-            Prozor.listaPitanja= listaPitanja;
+            Main.listaPitanja= listaPitanja;
 
             //ODGOVORI
             JSONArray ar2 = object.getJSONArray("odgovori");
@@ -71,12 +72,12 @@ class JSONParser {
                 odg.setOtvoreno(obj.getInt("otvoreno")==1 ? true : false);
                // dodajme odgovor za pitanje
                 Log.i("url", odg.getPitanje() + " " + odg.getRedni_broj()  );
-                Prozor.listaPitanja.get(odg.getPitanje()-1).dodajOdgovor(odg);
+                Main.listaPitanja.get(odg.getPitanje()-1).dodajOdgovor(odg);
             }
         } catch (Exception e) {
             Log.i("url", "parseString err " + e.toString());
             e.printStackTrace();
-            Prozor.listaPitanja = null;
+            Main.listaPitanja = null;
         }
 
     }

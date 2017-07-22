@@ -4,6 +4,9 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -17,17 +20,14 @@ class PitanjeTip12 {
     private Pitanje pitanje;
     private TextView tvPitanje;
     private ConstraintLayout okvirOdgovora;
-    private Context kontekst;
     private List<View> vListaOdgovor = new ArrayList<>();
     static EditText edit=null;
 
 
-    PitanjeTip12(Pitanje pitanje, TextView tvPitanje, ConstraintLayout okvirOdgovora, Context kontekst) {
+    PitanjeTip12(Pitanje pitanje, TextView tvPitanje, ConstraintLayout okvirOdgovora) {
         this.pitanje = pitanje;
         this.tvPitanje = tvPitanje;
         this.okvirOdgovora = okvirOdgovora;
-        this.kontekst = kontekst;
-
     }
 
      void nacrtajPitanje() {
@@ -37,9 +37,9 @@ class PitanjeTip12 {
         for(Odgovor odg : pitanje.listaOdgovora ) {
             View v;
             if(odg.isOtvoreno()) {
-                EditText tv = new EditText(kontekst);
+                EditText tv = new EditText(Main.kontekst);
                 tv.setTextColor(Color.LTGRAY);
-                tv.setHint("Unesi nesto drugo...");
+                tv.setHint("Your answer...");
                 tv.setWidth(1000);
                 tv.setHeight(150);
                 tv.setTag(i+1);
@@ -49,26 +49,36 @@ class PitanjeTip12 {
                 tv.setBackgroundResource(R.drawable.border);
                 edit=tv;
                     v = tv;
-                tv.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+
+                tv.addTextChangedListener(new TextWatcher() {
+
                     @Override
-                    public void onFocusChange(View v, boolean hasFocus) {
-                        Log.i("klik", "fokus 1" + hasFocus);
-                        if (!hasFocus) {
-                            Log.i("klik", "fokus lost");
-                            int redbrOdg = (int) v.getTag();
-                            String upisano = ((EditText) v).getText().toString();
-                            upisano.trim();
-                            if(! upisano.contentEquals("")) {
-                                pitanje.unesiOtvoreno(redbrOdg-1, upisano);
+                    public void afterTextChanged(Editable s) {
+                    }
+
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start,
+                                                  int count, int after) {
+                        if(pitanje.getTip()==1) {
+                            for(View tv : vListaOdgovor) {
+                                tv.setBackgroundResource(R.drawable.border);
                             }
-
                         }
+                    }
 
+                    @Override
+                    public void onTextChanged(CharSequence s, int start,
+                                              int before, int count) {
+                        int redbrOdg = (int) edit.getTag();
+                        String upisano = s.toString().trim();
+                        Log.i("klik", "onTextChanged: " + upisano);
+                        pitanje.unesiOtvoreno(redbrOdg, upisano);
                     }
                 });
 
+
             } else {
-                TextView tv = new TextView(kontekst);
+                TextView tv = new TextView(Main.kontekst);
                 tv.setText(odg.getOdgovor());
                     tv.setTextColor(Color.BLACK);
                 tv.setWidth(1500);
@@ -81,13 +91,15 @@ class PitanjeTip12 {
                 tv.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        if(edit != null) {
+                            if(TextUtils.isEmpty(edit.getText().toString())) edit.setText(""); //izbrisi ako izaberes nesto drugo
+                        }
                         int redbrOdg = (int) v.getTag();
                         int izabrano = pitanje.izaberiOdgovor(redbrOdg);
                         if(pitanje.getTip()==1 && izabrano==1) {
                             for(View tv : vListaOdgovor) {
                                 tv.setBackgroundResource(R.drawable.border);
                             }
-                            if(edit != null) edit.setText(""); //izbrisi ako izaberes nesto drugo
                             v.setBackgroundColor(Color.rgb(100,160,190));
                         }
                         if(pitanje.getTip()==2) {
@@ -97,6 +109,7 @@ class PitanjeTip12 {
                                 v.setBackgroundColor(Color.rgb(100,160,190));
                             }
                         }
+                       Log.e("klik", pitanje.printOdgovori());
                     }
 
             });

@@ -5,10 +5,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.SpannableString;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
@@ -16,29 +18,31 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
-
-
 import java.util.List;
 
-public class Prozor extends AppCompatActivity {
+public class Main extends AppCompatActivity {
     ConstraintLayout okvirSkrola;
     public static List<Pitanje> listaPitanja;
     StringBuilder jsonOdgovori = new StringBuilder();
     public static String kod;
-    public static int anketa;
+    public static int broj_ankete;
+    public static String naziv_ankete;
     public static Context kontekst;
 
     TextView tvPitanje;
+    TextView tvNazivAnkete;
     static int pitanje=0;
     public static int brojPitanja=0;
+
+    private boolean zahtevPoslat =false;
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(listaPitanja == null && kod.length() == 5) {
-            Log.i("kod", "onResueme");
+        if(listaPitanja == null && kod.length() == 5 && !zahtevPoslat) {
             UcitajPitanja task = new UcitajPitanja();
-          //  task.execute("http://94.127.6.8/android2/ucitaj/get_anketa.php");
+            task.execute("http://94.127.6.8/android2/services/get_survey/get_anketa.php");
+            zahtevPoslat = true;
         }
     }
 
@@ -52,46 +56,42 @@ public class Prozor extends AppCompatActivity {
         kontekst = getApplicationContext();
 
         tvPitanje = (TextView) findViewById(R.id.pitanje);
+        tvNazivAnkete = (TextView) findViewById(R.id.txtAnketa);
         okvirSkrola = (ConstraintLayout) findViewById(R.id.okvirSkrola) ;
 
         SharedPreferences data = getSharedPreferences("kod", getApplicationContext().MODE_PRIVATE);
         kod = data.getString("kod", "");
-        if(kod.length() != 5) {
+        if(TextUtils.isEmpty(kod)) {
             Log.e("kod", "otvaram KodAnkete activity");
             Intent ak = new Intent(this, KodAnkete.class);
             startActivity(ak);
         }
-        tvPitanje.setText(kod);
+        Toast.makeText(getApplicationContext(), "kod: " + kod, Toast.LENGTH_SHORT).show();
 
-        tvPitanje.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SharedPreferences.Editor pref = getApplicationContext().getSharedPreferences("A_PREFS_FILE", 0).edit();
-                pref.clear();
-                pref.apply();
-                startActivity(new Intent(getApplicationContext(), KodAnkete.class));
-            }
-        });
-
-        if(listaPitanja == null && kod.length() == 5) {
-                  UcitajPitanja task = new UcitajPitanja();
-                task.execute("http://94.127.6.8/android2/services/get_survey/get_anketa.php");
+        if(listaPitanja == null && kod.length() == 5  && !zahtevPoslat) {
+            UcitajPitanja task = new UcitajPitanja();
+            task.execute("http://94.127.6.8/android2/services/get_survey/get_anketa.php");
         }
+    }
 
-
+    public void insertCode(View v){
+        SharedPreferences.Editor pref = getApplicationContext().getSharedPreferences("A_PREFS_FILE", 0).edit();
+        pref.clear();
+        pref.apply();
+        startActivity(new Intent(getApplicationContext(), KodAnkete.class));
     }
 
     public void sledecePitanje(View v) {
-        //da li je nesto upisano u otvoreno pitanje
-        if(PitanjeTip12.edit!=null) PitanjeTip12.edit.clearFocus();
-        if(listaPitanja.get(pitanje).brojIzabranihOdgovora>0 || listaPitanja.get(pitanje).getTip()==4) {
+        if(listaPitanja.get(pitanje).brojIzabranihOdgovora>0 ||
+                listaPitanja.get(pitanje).izabranOtovren ||
+                listaPitanja.get(pitanje).getTip()==4) {
             jsonOdgovori.append(listaPitanja.get(pitanje).getJSONOdgovori());
            if(pitanje==brojPitanja-1){
-               Toast.makeText(getApplicationContext(), "Cuvam odgovore", Toast.LENGTH_SHORT).show();
+               Toast.makeText(getApplicationContext(), "Saving the Answers", Toast.LENGTH_SHORT).show();
                SacuvajOdgovore task = new SacuvajOdgovore();
                task.execute("http://94.127.6.8/android2/services/save_survey_data/save_data.php");
            } else {
-               Toast.makeText(getApplicationContext(), pitanje+1 + "/" + brojPitanja, Toast.LENGTH_SHORT).show();
+              // Toast.makeText(getApplicationContext(), pitanje+1 + "/" + brojPitanja, Toast.LENGTH_SHORT).show();
                nacrtajSledecePitanje();
            }
 
@@ -103,7 +103,7 @@ public class Prozor extends AppCompatActivity {
     private void nacrtajSledecePitanje() {
         pitanje++;
         Log.i("pit", pitanje + "");
-        PitanjeTip12 novoPitanje = new PitanjeTip12(listaPitanja.get(pitanje), tvPitanje, okvirSkrola, getApplicationContext());
+        PitanjeTip12 novoPitanje = new PitanjeTip12(listaPitanja.get(pitanje), tvPitanje, okvirSkrola);
         novoPitanje.nacrtajPitanje();
         nacrtajTok();
     }
@@ -123,7 +123,6 @@ public class Prozor extends AppCompatActivity {
         SpannableString ss1=  new SpannableString(sb.toString());
        // ss1.setSpan(new RelativeSizeSpan(2f), pitanje,pitanje+1, 0); // set size
         ss1.setSpan(new ForegroundColorSpan(Color.RED), pitanje, pitanje+1, 0);// set color
-        //Log.i("span", ss1.toString());
         tv.setText(ss1);
     }
 
@@ -131,21 +130,27 @@ public class Prozor extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... params) {
-            Log.i("url", "doInBackground " + params[0] + " " + kod);
+            Log.i("url", "UcitajPitanja doInBackground " + params[0] + " " + kod);
             return HttpManager.getData(params[0], "&kod="+kod);
         }
 
         @Override
         protected void onPostExecute(String result) {
-           // Log.i("url", "onPostExecute" + result);
-            JSONParser.parseGetPitanjaOdgovori(result);
+            zahtevPoslat=false;
+           Log.i("url", "onPostExecute" + result);
+            if(result!=null) {
+                JSONParser.parseGetPitanjaOdgovori(result);
+            } else {
+                Toast.makeText(getApplicationContext(), "Error in connecting to the server!", Toast.LENGTH_SHORT).show();
+            }
 
             if(listaPitanja != null) {
                 //uspesno ucitano
+                tvNazivAnkete.setText(naziv_ankete);
                 pitanje=-1;
                 nacrtajSledecePitanje();
             } else {
-                Toast.makeText(getApplicationContext(), "Pitnja nisu ucitana", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Survey isn't loaded!", Toast.LENGTH_SHORT).show();
             }
 
         }
@@ -154,16 +159,42 @@ public class Prozor extends AppCompatActivity {
     private class SacuvajOdgovore extends AsyncTask<String, String, String> {
         @Override
         protected String doInBackground(String... params) {
-            Log.i("url", "doInBackground " + params[0]);
             String post = jsonOdgovori.toString();
-            return HttpManager.getData(params[0], "&anketa="+anketa+"&odgovori=" + "[" + post.substring(0, post.length()-1) + "]");
+            Log.i("url", "SAVE doInBackground " + params[0] + " " + post);
+
+            return HttpManager.getData(params[0], "&anketa="+broj_ankete+"&odgovori=" + "[" + post.substring(0, post.length()-1) + "]");
         }
 
         @Override
         protected void onPostExecute(String result) {
             JSONParser.parseSaveOdgovor(result);
+            Toast.makeText(getApplicationContext(), "Answers are saved!", Toast.LENGTH_SHORT).show();
+
+           okvirSkrola.removeAllViews();
+
+            TextView tv = new TextView(kontekst);
+            tv.setText("Answers are saved on server. New survey can begin in 10s.");
+            tv.setTextSize(30);
+            tv.setTextColor(Color.rgb(250,150,50));
+            tvPitanje.setText("");
+            listaPitanja = null;
+            jsonOdgovori = new StringBuilder();
+            pitanje=0;
+            brojPitanja=0;
+            okvirSkrola.addView(tv);
+
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    UcitajPitanja task = new UcitajPitanja();
+                    task.execute("http://94.127.6.8/android2/services/get_survey/get_anketa.php");
+                }
+            }, 10000);
+
+
         }
     }
+
 
 }
 

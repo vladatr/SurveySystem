@@ -1,5 +1,6 @@
 package com.example.vladimir.anketa1;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -17,18 +18,15 @@ class Pitanje {
     private int tip;
     List<Odgovor> listaOdgovora = new ArrayList<>();
      int brojOdgovora=0;
+    //izabrani odgovori...za tip 1 izabrani odgovor je na poziciji 0
     List<Integer> izabraniOdgovori = new ArrayList<>();
     int brojIzabranihOdgovora=0;
-    String otvoreniOdgovor;
+    //posebno se cuvaju otvoreni
+    boolean izabranOtovren=false;
 
      void dodajOdgovor(Odgovor odg) {
         listaOdgovora.add(odg);
-         if(odg.isOtvoreno()) {
-             izabraniOdgovori.add(brojOdgovora); //da bi nasao odgovor...ako je "" izbacicu ga
-         } else {
-             izabraniOdgovori.add(0);
-         }
-
+         izabraniOdgovori.add(brojOdgovora, 0);
          brojOdgovora++;
     }
 
@@ -78,16 +76,38 @@ class Pitanje {
     }
 
     void unesiOtvoreno(int redbrOdg, String tekst) {
-        Log.e("klik", "unosim otvoreno " + tekst + " ...da li je " + redbrOdg+ "otvoren: " + listaOdgovora.get(redbrOdg).isOtvoreno());
-        izabraniOdgovori.set(0, redbrOdg); //unosi se i broj ...zbog uzorka
-        otvoreniOdgovor = tekst;
-        brojIzabranihOdgovora++;
+        Log.e("klik", "unosim otvoreno " + tekst + "..." + redbrOdg);
+        if(tip==1) {
+            if(TextUtils.isEmpty(tekst)) {
+                //tekst je izbrisan
+                izabranOtovren=false;
+                izabraniOdgovori.set(0, 0);
+                listaOdgovora.get(redbrOdg-1).setOdgovor("");
+            } else {
+                izabraniOdgovori.set(0, redbrOdg);
+                listaOdgovora.get(redbrOdg-1).setOdgovor(tekst);
+                izabranOtovren=true;
+                brojOdgovora--; //otvoren se cuva u booleanu
+            }
+        } else if(tip==2) {
+            if(TextUtils.isEmpty(tekst)) {
+                //tekst je izbrisan
+                izabranOtovren=false;
+                izabraniOdgovori.set(redbrOdg-1, 0);
+                listaOdgovora.get(redbrOdg-1).setOdgovor("");
+            } else {
+                izabraniOdgovori.set(redbrOdg-1, redbrOdg);
+                listaOdgovora.get(redbrOdg-1).setOdgovor(tekst);
+                izabranOtovren=true;
+            }
+        }
+        Log.e("klik", printOdgovori());
     }
 
     int izaberiOdgovor(int redbrOdg) {
         //ovaj metod moze da vrati 1, ako je nesto izabrano ili 0 ako je iskljuceno
         if(tip==1) {
-            if(izabraniOdgovori.get(0)==redbrOdg) return 0;
+            if(izabraniOdgovori.get(0)==redbrOdg) return 0; //vec izabran
             izabraniOdgovori.set(0, redbrOdg);
             Log.i("klik", "izabrano " + redbrOdg);
             brojIzabranihOdgovora=1;
@@ -109,6 +129,17 @@ class Pitanje {
 
         }
         return 0;
+    }
+
+    public String printOdgovori() {
+        StringBuilder sb = new StringBuilder();
+        for (int a : izabraniOdgovori) {
+            sb.append(a + ",");
+          // if(listaOdgovora.get(a-1) != null) sb.append(" uneto: |" + listaOdgovora.get(a-1).getOdgovor() + "|, ");
+        }
+        sb.append("...broj odg: " + brojIzabranihOdgovora);
+
+        return sb.toString();
     }
 
     public String toString() {
