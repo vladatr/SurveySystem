@@ -85,8 +85,16 @@ public class Main extends AppCompatActivity {
         if(listaPitanja.get(pitanje).brojIzabranihOdgovora>0 ||
                 listaPitanja.get(pitanje).izabranOtovren ||
                 listaPitanja.get(pitanje).getTip()==4) {
+            //procitaj odg.
             jsonOdgovori.append(listaPitanja.get(pitanje).getJSONOdgovori());
-           if(pitanje==brojPitanja-1){
+            //nadji sledec epitanje
+            if( listaPitanja.get(pitanje).getSledecePitanje() == 0) {
+                pitanje++;
+            } else {
+                pitanje = listaPitanja.get(pitanje).getSledecePitanje()-1;
+            }
+
+           if(pitanje==brojPitanja || pitanje==98){
                Toast.makeText(getApplicationContext(), "Saving the Answers", Toast.LENGTH_SHORT).show();
                SacuvajOdgovore task = new SacuvajOdgovore();
                task.execute("http://94.127.6.8/android2/services/save_survey_data/save_data.php");
@@ -101,8 +109,7 @@ public class Main extends AppCompatActivity {
     }
 
     private void nacrtajSledecePitanje() {
-        pitanje++;
-        Log.i("pit", pitanje + "");
+        Log.i("pit", pitanje + ".u fji nacrtajSledPit");
         PitanjeTip12 novoPitanje = new PitanjeTip12(listaPitanja.get(pitanje), tvPitanje, okvirSkrola);
         novoPitanje.nacrtajPitanje();
         nacrtajTok();
@@ -147,7 +154,6 @@ public class Main extends AppCompatActivity {
             if(listaPitanja != null) {
                 //uspesno ucitano
                 tvNazivAnkete.setText(naziv_ankete);
-                pitanje=-1;
                 nacrtajSledecePitanje();
             } else {
                 Toast.makeText(getApplicationContext(), "Survey isn't loaded!", Toast.LENGTH_SHORT).show();

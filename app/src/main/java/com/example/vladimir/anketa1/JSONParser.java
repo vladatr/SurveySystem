@@ -70,6 +70,7 @@ class JSONParser {
                 odg.setRedni_broj(obj.getInt("redni_broj"));
                 odg.setOdgovor(obj.getString("odgovor"));
                 odg.setOtvoreno(obj.getInt("otvoreno")==1 ? true : false);
+                odg.setSkok(obj.getInt("skok"));
                // dodajme odgovor za pitanje
                 Log.i("url", odg.getPitanje() + " " + odg.getRedni_broj()  );
                 Main.listaPitanja.get(odg.getPitanje()-1).dodajOdgovor(odg);

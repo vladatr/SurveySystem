@@ -16,6 +16,7 @@ class Pitanje {
    private int redni_broj;
     private String pitanje;
     private int tip;
+    private int sledecePitanje;
     List<Odgovor> listaOdgovora = new ArrayList<>();
      int brojOdgovora=0;
     //izabrani odgovori...za tip 1 izabrani odgovor je na poziciji 0
@@ -170,4 +171,13 @@ class Pitanje {
      void setTip(int tip) {
         this.tip = tip;
     }
+
+    public int getSledecePitanje() {
+        return sledecePitanje;
+    }
+
+    public void setSledecePitanje(int sledecePitanje) {
+        this.sledecePitanje = sledecePitanje;
+    }
+
 }

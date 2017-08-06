@@ -22,6 +22,7 @@ class PitanjeTip12 {
     private ConstraintLayout okvirOdgovora;
     private List<View> vListaOdgovor = new ArrayList<>();
     static EditText edit=null;
+    private boolean nacrtano=false;
 
 
     PitanjeTip12(Pitanje pitanje, TextView tvPitanje, ConstraintLayout okvirOdgovora) {
@@ -101,6 +102,8 @@ class PitanjeTip12 {
                                 tv.setBackgroundResource(R.drawable.border);
                             }
                             v.setBackgroundColor(Color.rgb(100,160,190));
+                            Log.i("pit", "skok:" + pitanje.listaOdgovora.get(redbrOdg-1).getSkok() );
+                            pitanje.setSledecePitanje(pitanje.listaOdgovora.get(redbrOdg-1).getSkok());
                         }
                         if(pitanje.getTip()==2) {
                             if(izabrano==0) {
@@ -133,5 +136,7 @@ class PitanjeTip12 {
                 set.applyTo(okvirOdgovora);
             i++;
         }
+        nacrtano=true;
+
     }
 }

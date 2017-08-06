@@ -7,6 +7,16 @@ package com.example.vladimir.anketa1;
     private boolean otvoreno;
     private String odgovor;
 
+     public int getSkok() {
+         return skok;
+     }
+
+     public void setSkok(int skok) {
+         this.skok = skok;
+     }
+
+     private int skok;
+
 
      boolean isOtvoreno() {
         return otvoreno;
